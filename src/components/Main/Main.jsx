@@ -23,7 +23,7 @@ export default function Main({onEditProfile, onEditAvatarProfile, onAddPlace, on
             );
             setCards(dataCard)
         })
-
+        .catch((error => console.error(`Ошибка ответа от сервера ${error}`)))
     },[])
 
     return (
