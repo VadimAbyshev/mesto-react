@@ -7,7 +7,7 @@ export default function Card({card, onCardClick, onBucketClick }){
           <h2 className="element__title" >{card.name}</h2>
           <div className="element__info_like-container">
             <button className="decoration element__like-button" type="button" />
-            <span className="element__like-counter" />
+            <span className="element__like-counter">{card.likes.length}</span>
           </div>
         </div>
       </div>
