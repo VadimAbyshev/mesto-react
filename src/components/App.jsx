@@ -33,6 +33,7 @@ function App() {
 
 
 
+
  useEffect(() =>{
   setLoadingCard(true)
   Promise.all([api.getInfo(), api.getCards()])
@@ -50,6 +51,35 @@ function App() {
   .catch((error => console.error(`Ошибка ответа от сервера ${error}`)))
 },[])
 
+
+const handleLike = useCallback((cards) => {
+  const isLike = cards.likes.some(item => currentUser._id === item._id)
+
+  if(isLike){
+  
+    api.delLike(cards._id)
+    .then(res => {
+        setCards(state => state.map((c) => c._id === cards._id ? res : c)) 
+
+    })
+
+    .catch((err) => console.error(`Ошибка снятия лайка ${err}`))
+} 
+  else {
+    api.addLike(cards._id)
+      .then(res => {
+        setCards(state => state.map((c) => c._id === cards._id ? res : c)) 
+      })
+      .catch((err) => console.error(`Ошибка установки лайка ${err}`))
+
+
+  }
+}, [currentUser._id])
+
+
+  
+
+
 function DeleteCardSubmit(evt){
   evt.preventDefault()
   setLoadingSend(true)
@@ -58,7 +88,7 @@ function DeleteCardSubmit(evt){
       setCards(cards.filter(item => {
         return item._id !== deleteCardId
       }))
-      closeAllPopups()
+      closeAllPropus()
       setLoadingSend(false)
     })
     .catch((error => console.error(`Ошибка удаления карточки ${error}`)))
@@ -73,48 +103,50 @@ function DeleteCardSubmit(evt){
     setDeletePlacePopup(false)
   }, [])
 
-  const closePopupByEsc = useCallback ((evt)=> {
-  if(evt.key === 'Escape'){
-    closeAllPropus()
-    document.removeEventListener('keydown' , closePopupByEsc)
-  }}, [closeAllPropus] )
+  // const closePopupByEsc = useCallback ((evt)=> {
+  // if(evt.key === 'Escape'){
+  //   closeAllPropus()
+  //   document.removeEventListener('keydown' , closePopupByEsc)
+  // }}, [closeAllPropus] )
 
-  const closeAllPopups = useCallback (() =>{
-    closeAllPropus()
-    document.removeEventListener('keydown' , closePopupByEsc)
 
-  }, [closeAllPropus, closePopupByEsc])
+const isOpen = isEditProfilePopupOpen || isAddPlacePopupOpen || isEditAvatarPopupOpen || isImagePopup || isDeletePlacePopup
 
-function setEvantListenerForDocument(){
-  document.addEventListener('keydown', closePopupByEsc)
-}
+useEffect(() => {
+    if (!isOpen) return;
+    
+    function handleESC(e) {
+      if (e.key === "Escape") {
+        closeAllPropus()
+      }
+    }
+
+    document.addEventListener("keydown", handleESC);
+
+    return () => document.removeEventListener("keydown", handleESC);
+  }, [isOpen]);
 
 
   function handleEditAvatarClick(){
     setEditAvatarPopupOpen(true)
-    setEvantListenerForDocument()
   }
 
   function handleEditProfileClick(){
     setEditProfilePopupOpen(true)
-    setEvantListenerForDocument()
   }
 
   function handleAddPlaceClick(){
     setAddPlacePopupOpen(true)
-    setEvantListenerForDocument()
   }
 
   function handleDeletePlaceClick(cardId){
     setDeleteCardId(cardId)
     setDeletePlacePopup(true)
-    setEvantListenerForDocument()
   }
 
   function handleCardClick(card){
     setSelectedCard(card)
     setImagePopup(true)
-    setEvantListenerForDocument()
   }
 
   function handleUpdateUser(dataUser, reset){
@@ -122,7 +154,7 @@ function setEvantListenerForDocument(){
     api.setUserInfo(dataUser)
     .then(res => {
       setCurrentUser(res)
-      closeAllPopups()
+      closeAllPropus()
       reset()
       setLoadingSend(false)
     })
@@ -134,7 +166,7 @@ function setEvantListenerForDocument(){
     api.setNewAvatar(dataUser)
     .then(res => {
       setCurrentUser(res)
-      closeAllPopups()
+      closeAllPropus()
       reset()
       setLoadingSend(false)
     })
@@ -147,12 +179,14 @@ function setEvantListenerForDocument(){
     api.addCard(dataCard)
     .then(res => {
       setCards([res, ...cards]);
-      closeAllPopups()
+      closeAllPropus()
       reset()
       setLoadingSend(false)
     })
     .catch((error => console.error(`Ошибка добавления карточки ${error}`)))
   }
+
+
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
@@ -169,6 +203,7 @@ function setEvantListenerForDocument(){
         onBucketClick = {handleDeletePlaceClick}
         cards = {cards}
         isLoadingCard = {isLoadingCard}
+        onCardLike = {handleLike}
       />
 
       <Footer/>
@@ -176,7 +211,7 @@ function setEvantListenerForDocument(){
       <EditProfilePopup
             onUpdateUser = {handleUpdateUser}
             isOpen = {isEditProfilePopupOpen}
-            onClose ={closeAllPopups}
+            onClose ={closeAllPropus}
             isLoadingSend = {isLoadingSend}
       />
 
@@ -221,14 +256,14 @@ function setEvantListenerForDocument(){
          <AddPlacePopup
               onAddPlace = {handleAddPlaceSubmit}
               isOpen = {isAddPlacePopupOpen}
-              onClose ={closeAllPopups}
+              onClose ={closeAllPropus}
               isLoadingSend = {isLoadingSend}
          />
 
          <EditAvatarPopup 
       onUpdateAvatar = {handleUpdateAvatar}
       isOpen={isEditAvatarPopupOpen}
-      onClose ={closeAllPopups}
+      onClose ={closeAllPropus}
       isLoadingSend = {isLoadingSend}
       />
 
@@ -240,7 +275,7 @@ function setEvantListenerForDocument(){
       title ='Вы уверены?'
       titleButton = 'Да'
       isOpen={isDeletePlacePopup}
-      onClose={closeAllPopups}
+      onClose={closeAllPropus}
       onSubmit = {DeleteCardSubmit}
       isLoadingSend = {isLoadingSend}
       

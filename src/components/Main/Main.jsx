@@ -4,7 +4,7 @@ import CurrentUserContext from "../../contexts/CurrentUserContext.js";
 import Spinner from "../Spinner/Spinner.jsx";
 
 
-export default function Main({onEditProfile, onEditAvatarProfile, onAddPlace, onCardClick, onBucketClick, cards, isLoadingCard}) {
+export default function Main({onEditProfile, onEditAvatarProfile, onAddPlace, onCardClick, onBucketClick, cards, isLoadingCard, onCardLike}) {
     
     const currentUser = useContext(CurrentUserContext)
 
@@ -32,7 +32,7 @@ export default function Main({onEditProfile, onEditAvatarProfile, onAddPlace, on
                 {isLoadingCard ? <Spinner/> : cards.map(data => 
                 {
                     return (
-                        <div className="element" key={data._id}> <Card card={data} onCardClick={onCardClick} onBucketClick={onBucketClick}/> </div>
+                        <div className="element" key={data._id}> <Card card={data} onCardClick={onCardClick} onBucketClick={onBucketClick} onCardLike={onCardLike}/> </div>
                     )
                 }
                 )}
